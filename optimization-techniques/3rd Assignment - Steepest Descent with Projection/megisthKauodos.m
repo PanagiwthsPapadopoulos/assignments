@@ -5,7 +5,7 @@ grad_f = @(x, y) [(2*x)/3; ...
 x0 = [4, 4];
 gamma_values = [0.1,0.3,3,5];
 tol = 0.001;
-max_iter = 100;
+max_iter = 500;
 
 
 % Gradient Descent with Fixed Step Size from Previous Assignment
@@ -33,7 +33,10 @@ function [x_vals, y_vals, f_values] = gradient_descent_fixed(f, grad_f, x0, max_
         y_vals = [y_vals, x(2)];
         f_values = [f_values, f(x(1), x(2))];
 
-
+        fprintf('Point [%d %d]\n', x(1), x(2));
+        fprintf('Funtion value %d\n', f(x(1), x(2)));
+        fprintf('Grad norm %d\n', norm(grad));
+        fprintf('\n');
         
     end
 
@@ -44,8 +47,6 @@ for i = 1:length(gamma_values)
     [x_vals, y_vals, f_values] = gradient_descent_fixed(f, grad_f, x0, max_iter, tol, gamma_values(i));
     results{i} = struct('x_vals', x_vals, 'y_vals', y_vals, 'f_values', f_values);
 end
-disp(results{1})
-% disp(size(results))
 
 
 close all
@@ -99,7 +100,7 @@ figure;
 plot(1:length(results{i}.f_values-1), results{i}.f_values, '-o', 'LineWidth', 1.5);
 xlabel('Iteration Number');
 ylabel('f(x,y)');
-title('f values vs Iteration Number for fixed step');
+title('f values vs Iteration Number for gamma '+ string(gamma_values(i))  );
 grid on;
 
 end
