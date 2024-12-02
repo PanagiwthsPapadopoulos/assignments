@@ -65,10 +65,10 @@ disp(x0);
 disp(x0(1))
 %%
 tol = 0.01;
-max_iter = 500;
+max_iter = 1500;
 s = 15;
 gamma_values = [0.5, 0.1, 0.2];
-s_values = [5, 15, 0.1];
+s_values = [5, 10/6, 0.1];
 
 
 for i = 1:length(gamma_values)
