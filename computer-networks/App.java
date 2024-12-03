@@ -1,4 +1,3 @@
-package com.cn2.communication;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -8,12 +7,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 
+import javax.sound.sampled.AudioFormat;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -25,7 +27,6 @@ public class App extends Frame implements WindowListener, ActionListener {
 	 */
 	static TextField inputTextField;		
 	static JTextArea textArea;				 
-	static JFrame frame;					
 	static JButton sendButton;				
 	static JTextField messageTextField;		  
 	public static Color gray;				
@@ -36,9 +37,10 @@ public class App extends Frame implements WindowListener, ActionListener {
 
 	// Declare the receiver's IP and port as class-level variables
     static String receiverAddressString = "192.168.2.9"; 
-    static int receiverPort = 12345;
-	static int ownPort = 12346;
-
+    static int receiverPort = 12346;
+	static int ownPort = 12345;
+	public boolean outgoingCall = false;
+	static public boolean incomingCall = false;
 	
 	/**
 	 * Construct the app's frame and initialize important parameters
@@ -71,7 +73,7 @@ public class App extends Frame implements WindowListener, ActionListener {
 		
 		//Setting up the buttons
 		sendButton = new JButton("Send");			
-		callButton = new JButton("Call");			
+		callButton = new JButton(!incomingCall?"Call":"Accept Call");			
 						
 		/*
 		 * 2. Adding the components to the GUI
@@ -96,13 +98,17 @@ public class App extends Frame implements WindowListener, ActionListener {
 	 * new messages.
 	 */
 	public static void main(String[] args){
-	
+		
 		/*
 		 * 1. Create the app's window
 		 */
-		App app = new App("CN2 - AUTH port "+ownPort);  // TODO: You can add the title that will displayed on the Window of the App here																		  
+		App app = new App("CN2 - AUTH port " + ownPort);  // TODO: You can add the title that will displayed on the Window of the App here																		  
 		app.setSize(500,250);				  
-		app.setVisible(true);				  
+		app.setVisible(true);	
+
+		AudioFormat format = AudioCall.getAudioFormat();
+        // String serverAddress = "127.0.0.1"; // Replace with the server's IP address
+        // int port = 5000;			  
 
 		/*
 		 * 2. 
@@ -117,14 +123,37 @@ public class App extends Frame implements WindowListener, ActionListener {
 
             // Continuously listen for incoming packets
             while (true) {
+
+				
+				
+				// Listening for incoming connections
+				try (java.net.ServerSocket serverSocket = new ServerSocket(ownPort)) {
+        		    System.out.println("Waiting for a client to connect...");
+        		    Socket socketCall = serverSocket.accept();
+        		    System.out.println("Client connected!");
+
+        		    // Start threads for sending and receiving audio
+        		    new Thread(new AudioSender(socketCall, format)).start();
+        		    new Thread(new AudioReceiver(socketCall, format)).start();
+        		} catch (IOException e) {
+        		    e.printStackTrace();
+        		}
+
+
+
+
                 // Receive the packet
                 socket.receive(packet);
 
                 // Convert the received data to a string
                 String message = new String(packet.getData(), 0, packet.getLength());
 				System.out.println("Received message: " + message);
-
-                textArea.append(receiverPort + ": " + message + newline);
+				if(message.equals("/call")){
+					incomingCall = true;
+					textArea.append(receiverPort + " started a call. " + newline);
+				}else{
+                	textArea.append(receiverPort + ": " + message + newline);
+				}
             }
 
             // Close the socket (although this will never be reached in this case)
@@ -132,6 +161,10 @@ public class App extends Frame implements WindowListener, ActionListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
+		
+
 		
 	}
 	
@@ -189,6 +222,49 @@ public class App extends Frame implements WindowListener, ActionListener {
 			// The "Call" button was clicked
 			
 			// TODO: Your code goes here...
+
+
+			if ( !outgoingCall ) {
+                // Start the client for initiating a call
+                System.out.println("Starting audio call as a client...");
+
+				// Send the appropriate message on the other end
+				
+				
+				try (DatagramSocket socket = new DatagramSocket()) {
+					byte[] buffer = "/call".getBytes();
+					DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(receiverAddressString), receiverPort);
+					socket.send(packet); // Send the packet
+					socket.close();// Close the socket
+				}catch (Exception exception) {
+					exception.printStackTrace();
+				}
+
+
+                new Thread(() -> {
+                    try {
+                        AudioClient.main(new String[] {Integer.toString(receiverPort)});
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
+                }).start();
+				textArea.append("You started a call." + newline);
+            } 
+			 if ( incomingCall ) {
+                // Start the server for receiving a call
+                System.out.println("Waiting for an incoming audio call...");
+                new Thread(() -> {
+                    try {
+                        AudioServer.main(new String[] {Integer.toString(receiverPort)});
+                    } catch (Exception exception) {
+                        exception.printStackTrace();
+                    }
+                }).start();
+            } 
+			
+			if(outgoingCall) {
+                // Cancel call
+            }
 			
 			
 		}

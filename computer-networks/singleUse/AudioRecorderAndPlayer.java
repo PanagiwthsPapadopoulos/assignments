@@ -1,0 +1,101 @@
+import javax.sound.sampled.*;
+
+public class AudioRecorderAndPlayer {
+    // Βασικές ρυθμίσεις για τον ήχο
+    private static final float SAMPLE_RATE = 8000.0f; // Συχνότητα δειγματοληψίας
+    private static final int SAMPLE_SIZE_IN_BITS = 8; // Μέγεθος δείγματος (8 bits)
+    private static final int CHANNELS = 1; // Μονοφωνικός ήχος
+    private static final boolean SIGNED = true; // Signed samples
+    private static final boolean BIG_ENDIAN = false; // Little-endian δεδομένα
+
+    public static void main(String[] args) {
+        // Δημιουργία μορφής ήχου
+        AudioFormat audioFormat = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_IN_BITS, CHANNELS, SIGNED, BIG_ENDIAN);
+
+        // Εκκίνηση καταγραφής και αναπαραγωγής σε διαφορετικά νήματα
+        Thread recorderThread = new Thread(new AudioRecorder(audioFormat));
+        Thread playerThread = new Thread(new AudioPlayer(audioFormat));
+
+        recorderThread.start();
+        playerThread.start();
+    }
+}
+
+// Νήμα για καταγραφή ήχου
+class AudioRecorder implements Runnable {
+    private final AudioFormat audioFormat;
+
+    public AudioRecorder(AudioFormat audioFormat) {
+        this.audioFormat = audioFormat;
+    }
+
+    @Override
+    public void run() {
+        try {
+            DataLine.Info info = new DataLine.Info(TargetDataLine.class, audioFormat);
+            TargetDataLine targetLine = (TargetDataLine) AudioSystem.getLine(info);
+            targetLine.open(audioFormat);
+            targetLine.start();
+
+            System.out.println("Recording...");
+
+            byte[] buffer = new byte[1024];
+            while (true) { // Συνεχής καταγραφή
+                targetLine.read(buffer, 0, buffer.length);
+                AudioBuffer.getInstance().addData(buffer); // Αποθήκευση δεδομένων για αναπαραγωγή
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+// Νήμα για αναπαραγωγή ήχου
+class AudioPlayer implements Runnable {
+    private final AudioFormat audioFormat;
+
+    public AudioPlayer(AudioFormat audioFormat) {
+        this.audioFormat = audioFormat;
+    }
+
+    @Override
+    public void run() {
+        try {
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
+            SourceDataLine sourceLine = (SourceDataLine) AudioSystem.getLine(info);
+            sourceLine.open(audioFormat);
+            sourceLine.start();
+
+            System.out.println("Playing...");
+
+            while (true) { // Συνεχής αναπαραγωγή
+                byte[] data = AudioBuffer.getInstance().getData();
+                if (data != null) {
+                    sourceLine.write(data, 0, data.length);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+// Buffer για καταγραφή και αναπαραγωγή ήχου
+class AudioBuffer {
+    private static final AudioBuffer instance = new AudioBuffer();
+    private byte[] data;
+
+    private AudioBuffer() {}
+
+    public static AudioBuffer getInstance() {
+        return instance;
+    }
+
+    public synchronized void addData(byte[] newData) {
+        this.data = newData.clone(); // Αποθήκευση νέων δεδομένων
+    }
+
+    public synchronized byte[] getData() {
+        return data; // Επιστροφή δεδομένων για αναπαραγωγή
+    }
+}
