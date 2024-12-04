@@ -7,12 +7,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 
 import javax.sound.sampled.AudioFormat;
 import javax.swing.JButton;
@@ -36,11 +33,12 @@ public class App extends Frame implements WindowListener, ActionListener {
 	// TODO: Please define and initialize your variables here...
 
 	// Declare the receiver's IP and port as class-level variables
-    static String receiverAddressString = "192.168.2.9"; 
-    static int receiverPort = 12346;
-	static int ownPort = 12345;
-	public boolean outgoingCall = false;
+    static String receiverAddressString = "localhost"; 
+    static int receiverPort = 12345;
+	static int ownPort = 12346;
+	static public boolean outgoingCall = false;
 	static public boolean incomingCall = false;
+	static boolean activeCall = false;
 	
 	/**
 	 * Construct the app's frame and initialize important parameters
@@ -72,8 +70,8 @@ public class App extends Frame implements WindowListener, ActionListener {
 		
 		
 		//Setting up the buttons
-		sendButton = new JButton("Send");			
-		callButton = new JButton(!incomingCall?"Call":"Accept Call");			
+		sendButton = new JButton("Send");	
+		callButton = new JButton("Call");			
 						
 		/*
 		 * 2. Adding the components to the GUI
@@ -114,10 +112,11 @@ public class App extends Frame implements WindowListener, ActionListener {
 		 * 2. 
 		 */
 			try {
-            // Create a DatagramSocket to listen on the specified port
-            DatagramSocket socket = new DatagramSocket(ownPort);
-            byte[] buffer = new byte[1024]; // Buffer to hold incoming data
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            
+			// Create a DatagramSocket to listen on the specified port
+            	DatagramSocket socket = new DatagramSocket(ownPort);
+            	byte[] buffer = new byte[1024]; // Buffer to hold incoming data
+            	DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 
             
 
@@ -127,20 +126,20 @@ public class App extends Frame implements WindowListener, ActionListener {
 				
 				
 				// Listening for incoming connections
-				try (java.net.ServerSocket serverSocket = new ServerSocket(ownPort)) {
-        		    System.out.println("Waiting for a client to connect...");
-        		    Socket socketCall = serverSocket.accept();
-        		    System.out.println("Client connected!");
+				// try (java.net.ServerSocket serverSocket = new ServerSocket(ownPort)) {
+        		//     System.out.println("Waiting for a client to connect...");
+        		//     Socket socketCall = serverSocket.accept();
+        		//     System.out.println("Client connected!");
 
-        		    // Start threads for sending and receiving audio
-        		    new Thread(new AudioSender(socketCall, format)).start();
-        		    new Thread(new AudioReceiver(socketCall, format)).start();
-        		} catch (IOException e) {
-        		    e.printStackTrace();
-        		}
+        		//     // Start threads for sending and receiving audio
+        		//     new Thread(new AudioSender(socketCall, format)).start();
+        		//     new Thread(new AudioReceiver(socketCall, format)).start();
+        		// } catch (IOException e) {
+        		//     e.printStackTrace();
+        		// }
 
 
-
+				
 
                 // Receive the packet
                 socket.receive(packet);
@@ -148,11 +147,44 @@ public class App extends Frame implements WindowListener, ActionListener {
                 // Convert the received data to a string
                 String message = new String(packet.getData(), 0, packet.getLength());
 				System.out.println("Received message: " + message);
-				if(message.equals("/call")){
-					incomingCall = true;
-					textArea.append(receiverPort + " started a call. " + newline);
-				}else{
-                	textArea.append(receiverPort + ": " + message + newline);
+				switch (message) {
+					case "/call":
+						incomingCall = true;
+						textArea.append(receiverPort + " started a call. " +  newline);
+						break;
+					case "/answer":
+						incomingCall = false;
+						outgoingCall = false;
+						activeCall = true;
+						textArea.append(receiverPort + " accepted the call. " +  newline);
+						break;
+					case "/end-call":
+						incomingCall = false;
+						outgoingCall = false;
+						activeCall = false;
+						textArea.append(receiverPort + " ended the call. " +  newline);
+						break;
+					default:
+						textArea.append(receiverPort + ": " + message + newline);
+						break;
+				}
+
+
+
+
+
+				if(incomingCall){
+					callButton.setText("Accept Call");
+					callButton.setEnabled(true); 
+				}else if(outgoingCall) {
+					callButton.setText("Waiting..."); 
+					callButton.setEnabled(false);
+				}else if(!incomingCall && !outgoingCall && !activeCall){
+					callButton.setText("Call"); 
+					callButton.setEnabled(true);
+				}else if(activeCall){
+					callButton.setText("End Call"); 
+					callButton.setEnabled(true);
 				}
             }
 
@@ -224,12 +256,12 @@ public class App extends Frame implements WindowListener, ActionListener {
 			// TODO: Your code goes here...
 
 
-			if ( !outgoingCall ) {
+			if ( !outgoingCall && !incomingCall && !activeCall) {
                 // Start the client for initiating a call
                 System.out.println("Starting audio call as a client...");
 
 				// Send the appropriate message on the other end
-				
+				outgoingCall = true;
 				
 				try (DatagramSocket socket = new DatagramSocket()) {
 					byte[] buffer = "/call".getBytes();
@@ -241,31 +273,78 @@ public class App extends Frame implements WindowListener, ActionListener {
 				}
 
 
-                new Thread(() -> {
-                    try {
-                        AudioClient.main(new String[] {Integer.toString(receiverPort)});
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                    }
-                }).start();
+                // new Thread(() -> {
+                //     try {
+                //         AudioClient.main(new String[] {Integer.toString(receiverPort)});
+                //     } catch (Exception exception) {
+                //         exception.printStackTrace();
+                //     }
+                // }).start();
 				textArea.append("You started a call." + newline);
-            } 
-			 if ( incomingCall ) {
+            } else if ( incomingCall ) {
                 // Start the server for receiving a call
                 System.out.println("Waiting for an incoming audio call...");
-                new Thread(() -> {
-                    try {
-                        AudioServer.main(new String[] {Integer.toString(receiverPort)});
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                    }
-                }).start();
-            } 
-			
-			if(outgoingCall) {
+
+				// Send the appropriate message on the other end
+				incomingCall = false;
+				activeCall = true;
+				
+				try (DatagramSocket socket = new DatagramSocket()) {
+					byte[] buffer = "/answer".getBytes();
+					DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(receiverAddressString), receiverPort);
+					socket.send(packet); // Send the packet
+					socket.close();// Close the socket
+				}catch (Exception exception) {
+					exception.printStackTrace();
+				}
+
+
+				textArea.append("You accepted the call." + newline);
+                // new Thread(() -> {
+                //     try {
+                //         AudioServer.main(new String[] {Integer.toString(receiverPort)});
+                //     } catch (Exception exception) {
+                //         exception.printStackTrace();
+                //     }
+                // }).start();
+            } else if(outgoingCall) {
                 // Cancel call
-            }
-			
+            } else if(activeCall){
+
+				// End Call
+
+				activeCall = false;
+				outgoingCall = false;
+				incomingCall = false;
+
+				try (DatagramSocket socket = new DatagramSocket()) {
+					byte[] buffer = "/end-call".getBytes();
+					DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName(receiverAddressString), receiverPort);
+					socket.send(packet); // Send the packet
+					socket.close();// Close the socket
+				}catch (Exception exception) {
+					exception.printStackTrace();
+				}
+
+
+				textArea.append("You ended the call." + newline);
+			}
+
+
+
+			if(incomingCall){
+				callButton.setText("Accept Call");
+				callButton.setEnabled(true); 
+			}else if(outgoingCall) {
+				callButton.setText("Waiting..."); 
+				callButton.setEnabled(false);
+			}else if(!incomingCall && !outgoingCall && !activeCall){
+				callButton.setText("Call"); 
+				callButton.setEnabled(true);
+			}else if(activeCall){
+				callButton.setText("End Call"); 
+				callButton.setEnabled(true);
+			}
 			
 		}
 			
