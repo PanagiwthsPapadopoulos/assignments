@@ -20,4 +20,11 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.eclipse.m2e.core.maven2Nature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>singleUse/AudioRecorderAndPlayer1.java</name>
+			<type>1</type>
+			<location>/Users/panagiwths/Desktop/assignments/computer-networks/singleUse/AudioRecorderAndPlayer1.java</location>
+		</link>
+	</linkedResources>
 </projectDescription>

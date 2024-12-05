@@ -8,19 +8,27 @@ import javax.sound.sampled.TargetDataLine;
 public class AudioRecorder implements Runnable {
     public final AudioFormat audioFormat;
     public final Sender sender;
-    public  boolean activeCall;
+    public boolean active;
+    public boolean local;
 
-    public AudioRecorder(Sender sender, AudioFormat audioFormat, boolean activeCall) {
+    public AudioRecorder(Sender sender, AudioFormat audioFormat, boolean active, boolean local) {
         this.audioFormat = audioFormat;
-        this.activeCall = activeCall;
+        this.active = active;
         this.sender = sender;
+        this.local = local;
+    }
+
+    // Constructor for local Audio Recorder
+    public AudioRecorder(AudioFormat audioFormat, boolean active) {
+        this.audioFormat = audioFormat;
+        this.active = active;
+        this.local = true;
+        this.sender = null;
     }
 
     // Set call status
-    public void setActiveCall(boolean activeCall){
-        this.activeCall = activeCall;
-        System.out.println("ActiveCall var: " + activeCall);
-        return;
+    public void setActive(boolean active){
+        this.active = active;
     }
 
     @Override
@@ -35,16 +43,27 @@ public class AudioRecorder implements Runnable {
             targetLine.start();
 
             System.out.println("Recording...");
-            System.out.println("Active Call: " + activeCall);
+            
             byte[] buffer = new byte[1024];
             while (true) { // Συνεχής καταγραφή
-            	System.out.println("Thread is running...");
-                if(activeCall){
-                	System.out.println("Active Call and transmitting with mic");
-                    targetLine.read(buffer, 0, buffer.length);
-                    sender.sendAudio(buffer);
-                }
-                Thread.sleep(1500);
+                if(active) {
+                    int bytesRead = targetLine.read(buffer, 0, buffer.length);
+                    if (bytesRead > 0) {
+                        // Here, you can process or store the recorded audio data as needed
+                        
+                        if (local){
+                            AudioBuffer.getInstance().addData(buffer);
+                        } else {
+                            sender.sendAudio(buffer);
+                        }
+                        // Αποθήκευση δεδομένων για αναπαραγωγή
+                        
+                        
+                    //    System.out.println("Recording audio with " + bytesRead + " bytes read");
+                    }
+                } 
+                
+                targetLine.flush();
             }
         } catch (Exception e) {
             e.printStackTrace();

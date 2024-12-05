@@ -30,16 +30,32 @@ public class App extends Frame implements WindowListener, ActionListener {
 	public static Color gray;
 	final static String newline = "\n";
 	static JButton callButton;
+	static JButton testMicButton;
 
 	// TODO: Please define and initialize your variables here...
 
 	// Declare the receiver's IP and port as class-level variables
-	static String receiverAddressString = "localhost";
-	static int receiverPort = 12345;
-	static int ownPort = 12346;
+	static String receiverAddressString = "192.168.2.9";
+	static String ownAddressString = "192.168.2.9";
+	static int receiverPort = 12346;
+	static int ownPort = 12345;
 	static public boolean outgoingCall = false;
 	static public boolean incomingCall = false;
 	static boolean activeCall = false;
+	static boolean activeTest = false;
+	
+	
+	// For testing the microphone
+	
+	
+
+    // Εκκίνηση καταγραφής και αναπαραγωγής σε διαφορετικά νήματα   
+    private static AudioRecorder audioRecorderLocal;
+    private static AudioPlayer audioPlayerLocal;
+    private static SinePlayer sinePlayerLocal;
+    
+    
+    // End microphone testing
 
 	/**
 	 * Construct the app's frame and initialize important parameters
@@ -71,6 +87,7 @@ public class App extends Frame implements WindowListener, ActionListener {
 		// Setting up the buttons
 		sendButton = new JButton("Send");
 		callButton = new JButton("Call");
+		testMicButton = new JButton("Test mic - OFF");
 
 		/*
 		 * 2. Adding the components to the GUI
@@ -79,6 +96,7 @@ public class App extends Frame implements WindowListener, ActionListener {
 		add(inputTextField);
 		add(sendButton);
 		add(callButton);
+		add(testMicButton);
 
 		/*
 		 * 3. Linking the buttons to the ActionListener
@@ -86,7 +104,15 @@ public class App extends Frame implements WindowListener, ActionListener {
 		sendButton.addActionListener(this);
 		callButton.addActionListener(this);
 		inputTextField.addActionListener(this);
+		testMicButton.addActionListener(this);
 
+		// Microphone testing
+		
+		
+	    
+	    
+		
+		
 	}
 
 	/**
@@ -98,7 +124,8 @@ public class App extends Frame implements WindowListener, ActionListener {
 		 * 1. Create the app's window
 		 */
 		App app = new App("CN2 - AUTH port " + ownPort); // TODO: You can add the title that will displayed on the
-															// Window of the App here
+		
+		// Window of the App here
 		app.setSize(500, 250);
 		app.setVisible(true);
 
@@ -109,6 +136,7 @@ public class App extends Frame implements WindowListener, ActionListener {
 		 * 2.
 		 */
 		try {
+			
 
 			// Create a DatagramSocket to listen on the specified port
 			DatagramSocket socket = new DatagramSocket(ownPort);
@@ -126,15 +154,26 @@ public class App extends Frame implements WindowListener, ActionListener {
 			Sender sender = new Sender(socket, InetAddress.getByName(receiverAddressString), receiverPort);
 
 			// Audio format configuration
-			AudioFormat format = new AudioFormat(16000, 16, 1, true, false);
+			AudioFormat audioFormat = new AudioFormat(16000, 16, 1, true, false);
+			// AudioFormat format = new AudioFormat(8000.0f, 8, 1, true, false);
 
 			// Create and start audio sender and receiver
-			AudioRecorder audioRecorder = new AudioRecorder(sender, format, activeCall);
-			AudioPlayer audioPlayer = new AudioPlayer(format, activeCall);
+			AudioRecorder audioRecorderCall = new AudioRecorder(sender, audioFormat, activeCall, false);
+			AudioPlayer audioPlayerCall = new AudioPlayer(audioFormat, activeCall, false);
 
 			// Start threads for sending and receiving audio
-			new Thread(audioRecorder).start();
-			new Thread(audioPlayer).start();
+			new Thread(audioRecorderCall).start();
+			new Thread(audioPlayerCall).start();
+			
+			// Microphone check
+		    audioRecorderLocal = new AudioRecorder(audioFormat, activeTest);
+		    new Thread(audioRecorderLocal).start();
+		    
+		    audioPlayerLocal = new AudioPlayer(audioFormat, activeTest, true);
+		    new Thread(audioPlayerLocal).start();
+	        
+	        
+	        
 
 			// Continuously listen for incoming packets
 			while (true) {
@@ -178,32 +217,18 @@ public class App extends Frame implements WindowListener, ActionListener {
 				} else if (data.getType().equals("audio")) {
 					// Handle received audio
 					byte[] audioData = data.getAudio();
-					System.out.println("Changed active call for audioRecorder");
-					audioRecorder.setActiveCall(activeCall);
-					audioPlayer.setAudioData(audioData);
+					audioRecorderCall.setActive(activeCall);
+					audioPlayerCall.setAudioData(audioData);
 					System.out.println("Received audio data of length: " + audioData.length);
 					// The audio will now be handled by the AudioReceiver in a separate thread
 				}
 
-				System.out.println("Changed active call for audioRecorder");
-				audioPlayer.setActiveCall(activeCall);
-				audioRecorder.setActiveCall(activeCall);
+				audioPlayerCall.setActive(activeCall);
+				audioRecorderCall.setActive(activeCall);
 
 				// Change Logic for Receiver
 
-				if (incomingCall) {
-					callButton.setText("Accept Call");
-					callButton.setEnabled(true);
-				} else if (outgoingCall) {
-					callButton.setText("Waiting...");
-					callButton.setEnabled(false);
-				} else if (!incomingCall && !outgoingCall && !activeCall) {
-					callButton.setText("Call");
-					callButton.setEnabled(true);
-				} else if (activeCall) {
-					callButton.setText("End Call");
-					callButton.setEnabled(true);
-				}
+				buttonLogic();
 
 			}
 
@@ -303,23 +328,66 @@ public class App extends Frame implements WindowListener, ActionListener {
 				exception.printStackTrace();
 			}
 
-			// Change Logic for Sender
-			if (incomingCall) {
-				callButton.setText("Accept Call");
-				callButton.setEnabled(true);
-			} else if (outgoingCall) {
-				callButton.setText("Waiting...");
-				callButton.setEnabled(false);
-			} else if (!incomingCall && !outgoingCall && !activeCall) {
-				callButton.setText("Call");
-				callButton.setEnabled(true);
-			} else if (activeCall) {
-				callButton.setText("End Call");
-				callButton.setEnabled(true);
-			}
+			
 
+		} else if (e.getSource() == testMicButton) {
+			
+			
+
+		    // Open/close microphone
+			activeTest = !activeTest;
+			System.out.println("Mic status: " + activeTest);
+			
+			// sinePlayerThread.setActive(activeTest);
+			audioRecorderLocal.setActive(activeTest);
+			audioPlayerLocal.setActive(activeTest);
+			
+			if(activeTest) {
+				textArea.append("Microphone Active" + newline);
+			} else {
+				textArea.append("Microphone Inactive" + newline);
+			}
+				
+		}
+		
+		buttonLogic();
+
+	}
+
+	public static void buttonLogic(){
+
+		if(outgoingCall){
+			callButton.setText("Waiting...");
+			callButton.setEnabled(false);
+			testMicButton.setEnabled(false);
 		}
 
+		if (incomingCall) {
+			callButton.setText("Accept Call");
+		}
+
+		if(activeCall){
+			callButton.setText("End Call");
+			callButton.setEnabled(true);
+			testMicButton.setEnabled(false);
+		}
+
+		if (!incomingCall && !outgoingCall && !activeCall) {
+			callButton.setText("Call");
+			callButton.setEnabled(true);
+			testMicButton.setEnabled(true);
+		} 
+
+		// if mic test is active, call button does not work
+		if (activeTest) {
+			testMicButton.setText("Test mic - ONN");
+			callButton.setEnabled(false);
+		}
+
+		// If mic test is inactive, call button works
+		if(!activeTest) {
+			testMicButton.setText("Test mic - OFF");
+		}
 	}
 
 	/**

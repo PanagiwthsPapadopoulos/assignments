@@ -84,7 +84,7 @@ public class Sender {
             // Send the actual audio data
             DatagramPacket audioPacket = new DatagramPacket(audioData, audioData.length, receiverAddress, receiverPort);
             socket.send(audioPacket);
-
+            System.out.println("Sent audio Packet");
         } catch (Exception e) {
             e.printStackTrace();
         }

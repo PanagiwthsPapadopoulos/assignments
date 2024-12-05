@@ -4,7 +4,7 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
-public class AudioRecorderAndPlayer {
+public class AudioRecorderAndPlayer1 {
     // Βασικές ρυθμίσεις για τον ήχο
     private static final float SAMPLE_RATE = 8000.0f; // Συχνότητα δειγματοληψίας
     private static final int SAMPLE_SIZE_IN_BITS = 8; // Μέγεθος δείγματος (8 bits)
@@ -14,7 +14,7 @@ public class AudioRecorderAndPlayer {
 
     public static void main(String[] args) {
         // Δημιουργία μορφής ήχου
-        AudioFormat audioFormat = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_IN_BITS, CHANNELS, SIGNED, BIG_ENDIAN);
+        AudioFormat audioFormat = new AudioFormat(8000, 16, 1, true, false);
 
         // Εκκίνηση καταγραφής και αναπαραγωγής σε διαφορετικά νήματα
         Thread recorderThread = new Thread(new AudioRecorder1(audioFormat));

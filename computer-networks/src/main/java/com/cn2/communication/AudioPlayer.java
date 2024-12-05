@@ -5,57 +5,74 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 
-public class AudioPlayer implements Runnable{
-    private final AudioFormat format;
+class AudioPlayer implements Runnable {
+    private final AudioFormat audioFormat;
     private byte[] audioData;
-    private SourceDataLine speakers;
-    private boolean activeCall;
+    boolean activeCall;
+    boolean local;
 
-    // Initialize the AudioPlayer with a given AudioFormat
-    public AudioPlayer(AudioFormat format, boolean activeCall) {
-        this.format = format;
+    public AudioPlayer(AudioFormat audioFormat, boolean activeCall, boolean local) {
+        this.audioFormat = audioFormat;
         this.activeCall = activeCall;
+        this.local = local;
     }
 
-    // Set Call Status
-    public void setActiveCall(boolean activeCall){
-        this.activeCall = activeCall;
+    public byte[] getData() {
+    	// System.out.println("Returned Audio Data within class");
+    	return audioData;
     }
-
-    // Set audio data
-    public void setAudioData(byte[] audioData){
-        this.audioData = audioData;
+    
+    public void setAudioData(byte[] incomingData) {
+    	System.out.println("Set Data");
+    	this.audioData = incomingData;
     }
-
-    // Method to close the audio line when done
-    public void close() {
-        if (speakers != null) {
-            speakers.drain();  // Finish playing any remaining data
-            speakers.close();  // Close the audio line
-        }
+    
+    public void setActive(boolean activeCall) {
+    	this.activeCall = activeCall;
     }
-
-     @Override
+    
+    @Override
     public void run() {
         try {
-            DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
+
+            DataLine.Info info = new DataLine.Info(SourceDataLine.class, audioFormat);
             SourceDataLine sourceLine = (SourceDataLine) AudioSystem.getLine(info);
-            sourceLine.open(format);
+            sourceLine.open(audioFormat);
             sourceLine.start();
-
+            
+            if (!sourceLine.isOpen() || !sourceLine.isActive()) {
+            	System.out.println("SourceLine open: " + sourceLine.isOpen() );
+            	System.out.println("SourceLine active: " + sourceLine.isActive() );
+                System.err.println("SourceDataLine is not properly initialized.");
+            }
+            
+            byte[] data = new byte[1024];
             System.out.println("Playing...");
-
+            
             while (true) { // Συνεχής αναπαραγωγή
-                if (audioData != null && activeCall) {
-                    sourceLine.write(audioData, 0, audioData.length);
+                
+                
+                if (activeCall){
+                    
+                        
+                    if(local){
+                        data = AudioBuffer.getInstance().getData();
+                    } else {
+                        data = getData();
+                    }
+                    if(data != null) {
+                        sourceLine.write(data, 0, data.length);
+                        // System.out.println("Player: Actual Data received");
+                    }
+                    
+                    // AudioBuffer.getInstance().nullData();
+                    
                 }
+                sourceLine.flush();
+                
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    
 }
-
-
