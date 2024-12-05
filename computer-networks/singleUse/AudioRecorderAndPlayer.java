@@ -1,4 +1,8 @@
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.DataLine;
+import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.TargetDataLine;
 
 public class AudioRecorderAndPlayer {
     // Βασικές ρυθμίσεις για τον ήχο
@@ -13,8 +17,8 @@ public class AudioRecorderAndPlayer {
         AudioFormat audioFormat = new AudioFormat(SAMPLE_RATE, SAMPLE_SIZE_IN_BITS, CHANNELS, SIGNED, BIG_ENDIAN);
 
         // Εκκίνηση καταγραφής και αναπαραγωγής σε διαφορετικά νήματα
-        Thread recorderThread = new Thread(new AudioRecorder(audioFormat));
-        Thread playerThread = new Thread(new AudioPlayer(audioFormat));
+        Thread recorderThread = new Thread(new AudioRecorder1(audioFormat));
+        Thread playerThread = new Thread(new AudioPlayer1(audioFormat));
 
         recorderThread.start();
         playerThread.start();
@@ -22,10 +26,10 @@ public class AudioRecorderAndPlayer {
 }
 
 // Νήμα για καταγραφή ήχου
-class AudioRecorder implements Runnable {
+class AudioRecorder1 implements Runnable {
     private final AudioFormat audioFormat;
 
-    public AudioRecorder(AudioFormat audioFormat) {
+    public AudioRecorder1(AudioFormat audioFormat) {
         this.audioFormat = audioFormat;
     }
 
@@ -51,10 +55,10 @@ class AudioRecorder implements Runnable {
 }
 
 // Νήμα για αναπαραγωγή ήχου
-class AudioPlayer implements Runnable {
+class AudioPlayer1 implements Runnable {
     private final AudioFormat audioFormat;
 
-    public AudioPlayer(AudioFormat audioFormat) {
+    public AudioPlayer1(AudioFormat audioFormat) {
         this.audioFormat = audioFormat;
     }
 
