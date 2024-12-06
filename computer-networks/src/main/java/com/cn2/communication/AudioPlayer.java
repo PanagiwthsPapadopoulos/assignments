@@ -1,5 +1,7 @@
 package com.cn2.communication;
 
+import java.io.File;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
@@ -15,6 +17,10 @@ class AudioPlayer implements Runnable {
         this.audioFormat = audioFormat;
         this.activeCall = activeCall;
         this.local = local;
+    }
+
+    public void emptyPlayer(){
+        audioData = null;
     }
 
     public byte[] getData() {
@@ -46,9 +52,35 @@ class AudioPlayer implements Runnable {
                 System.err.println("SourceDataLine is not properly initialized.");
             }
             
+            File audioFile = new File("/Users/panagiwths/Desktop/assignments/computer-networks/src/main/java/record.wav");
+
             byte[] data = new byte[1024];
             System.out.println("Playing...");
             
+        //     try (AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile)) {
+        //     // Get the audio format and create a line
+        //     AudioFormat format = audioStream.getFormat();
+
+        //     try (SourceDataLine audioLine = (SourceDataLine) AudioSystem.getLine(info)) {
+        //         audioLine.open(format);
+        //         audioLine.start();
+
+        //         byte[] buffer = new byte[1024];
+        //         int bytesRead;
+
+        //         // Read and play the audio data
+        //         while ((bytesRead = audioStream.read(buffer, 0, buffer.length)) != -1) {
+        //             audioLine.write(buffer, 0, bytesRead);
+        //         }
+
+        //         // Drain and close the line
+        //         audioLine.drain();
+        //     }
+        // } catch (UnsupportedAudioFileException | LineUnavailableException | IOException e) {
+        //     e.printStackTrace();
+        // }
+
+
             while (true) { // Συνεχής αναπαραγωγή
                 
                 
@@ -60,15 +92,20 @@ class AudioPlayer implements Runnable {
                     } else {
                         data = getData();
                     }
+
                     if(data != null) {
                         sourceLine.write(data, 0, data.length);
-                        // System.out.println("Player: Actual Data received");
+                        System.out.println("Player: Actual Data received");
+                        // while ((bytesRead = audioStream.read(buffer, 0, buffer.length)) != -1) {
+                        //     audioLine.write(buffer, 0, bytesRead);
+                        // }
                     }
                     
                     // AudioBuffer.getInstance().nullData();
                     
                 }
-                sourceLine.flush();
+                sourceLine.drain();
+                
                 
             }
         } catch (Exception e) {

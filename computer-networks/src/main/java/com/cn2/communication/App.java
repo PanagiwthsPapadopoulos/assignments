@@ -34,17 +34,33 @@ public class App extends Frame implements WindowListener, ActionListener {
 	// TODO: Please define and initialize your variables here...
 
 	// Declare the receiver's IP and port as class-level variables
+<<<<<<< HEAD
+
+	// static String receiverAddressString = "192.168.2.9";
+
+	static String receiverAddressString = "localhost";
+	static String ownAddressString = "192.168.2.9";
+
+	static int receiverPort = 12345;
+	static int ownPort = 12345;
+=======
 	static String receiverAddressString = "ipAddress";	// change with correct address
 	static String ownAddressString = "ipAdress";		// change with correct address
 	static int receiverPort = 12346;					// change with correct port number
 	static int ownPort = 12345;							// change with correct port number
+>>>>>>> master
 	static public boolean outgoingCall = false;
 	static public boolean incomingCall = false;
 	static boolean activeCall = false;
 	static boolean activeTest = false;
 	
+<<<<<<< HEAD
+	
+    // Εκκίνηση καταγραφής και αναπαραγωγής σε διαφορετικά νήματα   
+=======
 
     // Local Recorder and Player initialization for microphone testing
+>>>>>>> master
     private static AudioRecorder audioRecorderLocal;
     private static AudioPlayer audioPlayerLocal;
     
@@ -134,7 +150,15 @@ public class App extends Frame implements WindowListener, ActionListener {
 			Sender sender = new Sender(socket, InetAddress.getByName(receiverAddressString), receiverPort);
 
 			// Audio format configuration
-			AudioFormat audioFormat = new AudioFormat(16000, 16, 1, true, false);
+			AudioFormat audioFormat = new AudioFormat(
+    AudioFormat.Encoding.PCM_SIGNED, // Signed PCM encoding
+    8000,                         // Sample rate: 8000 Hz
+    8,                               // Sample size in bits: 8 bits
+    1,                               // Channels: Mono
+    1,                               // Frame size (1 byte per frame)
+	8000,                         // Frame rate matches sample rate
+    false                            // Little-endian byte order
+);
 			// AudioFormat format = new AudioFormat(8000.0f, 8, 1, true, false);
 
 			// Create and start audio sender and receiver
@@ -306,7 +330,13 @@ public class App extends Frame implements WindowListener, ActionListener {
 				textArea.append("Microphone Active" + newline);
 			} else {
 				textArea.append("Microphone Inactive" + newline);
+<<<<<<< HEAD
+				audioPlayerLocal.emptyPlayer();
+			}
+				
+=======
 			}	
+>>>>>>> master
 		}
 		
 		buttonLogic();
@@ -339,7 +369,7 @@ public class App extends Frame implements WindowListener, ActionListener {
 
 		// if mic test is active, call button does not work
 		if (activeTest) {
-			testMicButton.setText("Test mic - ONN");
+			testMicButton.setText("Test mic - ON");
 			callButton.setEnabled(false);
 		}
 
