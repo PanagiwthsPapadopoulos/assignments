@@ -34,7 +34,6 @@ public class App extends Frame implements WindowListener, ActionListener {
 	// TODO: Please define and initialize your variables here...
 
 	// Declare the receiver's IP and port as class-level variables
-<<<<<<< HEAD
 
 	// static String receiverAddressString = "192.168.2.9";
 
@@ -43,24 +42,13 @@ public class App extends Frame implements WindowListener, ActionListener {
 
 	static int receiverPort = 12345;
 	static int ownPort = 12345;
-=======
-	static String receiverAddressString = "ipAddress";	// change with correct address
-	static String ownAddressString = "ipAdress";		// change with correct address
-	static int receiverPort = 12346;					// change with correct port number
-	static int ownPort = 12345;							// change with correct port number
->>>>>>> master
 	static public boolean outgoingCall = false;
 	static public boolean incomingCall = false;
 	static boolean activeCall = false;
 	static boolean activeTest = false;
 	
-<<<<<<< HEAD
-	
-    // Εκκίνηση καταγραφής και αναπαραγωγής σε διαφορετικά νήματα   
-=======
 
     // Local Recorder and Player initialization for microphone testing
->>>>>>> master
     private static AudioRecorder audioRecorderLocal;
     private static AudioPlayer audioPlayerLocal;
     
@@ -330,13 +318,7 @@ public class App extends Frame implements WindowListener, ActionListener {
 				textArea.append("Microphone Active" + newline);
 			} else {
 				textArea.append("Microphone Inactive" + newline);
-<<<<<<< HEAD
-				audioPlayerLocal.emptyPlayer();
-			}
-				
-=======
 			}	
->>>>>>> master
 		}
 		
 		buttonLogic();
