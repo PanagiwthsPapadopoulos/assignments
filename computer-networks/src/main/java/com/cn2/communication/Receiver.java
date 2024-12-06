@@ -4,7 +4,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 public class Receiver {
-    private DatagramSocket socket;
+    private final DatagramSocket socket;
 
     public Receiver(DatagramSocket socket) {
         this.socket = socket;

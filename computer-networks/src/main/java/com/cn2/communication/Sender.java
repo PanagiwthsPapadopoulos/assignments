@@ -5,9 +5,9 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class Sender {
-    private DatagramSocket socket;
-    private InetAddress receiverAddress;
-    private int receiverPort;
+    private final DatagramSocket socket;
+    private final InetAddress receiverAddress;
+    private final int receiverPort;
 
     public Sender(DatagramSocket socket, InetAddress receiverAddress, int receiverPort) {
         this.socket = socket;
