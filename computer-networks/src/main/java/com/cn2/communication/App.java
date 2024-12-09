@@ -37,7 +37,7 @@ public class App extends Frame implements WindowListener, ActionListener {
 
 	// static String receiverAddressString = "192.168.2.9";
 
-	static String receiverAddressString = "localhost";
+	static String receiverAddressString = "192.168.1.6";
 	static String ownAddressString = "192.168.2.9";
 
 	static int receiverPort = 12345;
@@ -122,7 +122,7 @@ public class App extends Frame implements WindowListener, ActionListener {
 
 		// String serverAddress = "127.0.0.1"; // Replace with the server's IP address
 		// int port = 5000;
-		receiverAddressString = "192.168.2.9";
+		// receiverAddressString = "192.168.2.9";
 		/*
 		 * 2.
 		 */

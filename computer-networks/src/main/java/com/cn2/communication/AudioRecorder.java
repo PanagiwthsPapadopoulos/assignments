@@ -48,7 +48,7 @@ public class AudioRecorder implements Runnable {
             System.out.println("Recording...");
 
             AudioInputStream recordingStream = new AudioInputStream(targetLine);
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[2048];
             while (true) { // Συνεχής καταγραφή
                 if(active) {
                     int bytesRead = targetLine.read(buffer, 0, buffer.length);
