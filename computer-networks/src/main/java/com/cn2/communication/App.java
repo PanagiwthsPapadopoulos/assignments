@@ -37,7 +37,7 @@ public class App extends Frame implements WindowListener, ActionListener {
 
 	// static String receiverAddressString = "192.168.2.9";
 
-	static String receiverAddressString = "192.168.1.6";
+	static String receiverAddressString = "192.168.124.227";
 	static String ownAddressString = "192.168.2.9";
 
 	static int receiverPort = 12345;
