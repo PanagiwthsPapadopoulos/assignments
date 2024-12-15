@@ -1,9 +1,6 @@
 package com.cn2.communication;
 
-import java.io.File;
-
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
 import javax.sound.sampled.TargetDataLine;
@@ -44,19 +41,17 @@ public class AudioRecorder implements Runnable {
             TargetDataLine targetLine = (TargetDataLine) AudioSystem.getLine(info);
             targetLine.open(audioFormat);
             targetLine.start();
-            File outputFile = new File("record.wav");
+            
             System.out.println("Recording...");
 
-            AudioInputStream recordingStream = new AudioInputStream(targetLine);
             byte[] buffer = new byte[2048];
             while (true) { // Συνεχής καταγραφή
                 if(active) {
                     int bytesRead = targetLine.read(buffer, 0, buffer.length);
                     if (bytesRead > 0) {
+
                         // Here, you can process or store the recorded audio data as needed
                         
-                        // AudioSystem.write(recordingStream, AudioFileFormat.Type.WAVE, outputFile);
-
 
                         if (local){
                             AudioBuffer.getInstance().addData(buffer);

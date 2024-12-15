@@ -1,9 +1,9 @@
 package com.cn2.communication;
 
 public class ReceivedData {
-    private String type; // "message" or "audio"
-    private String message; // Text message (if applicable)
-    private byte[] audio; // Audio data (if applicable)
+    private final String type; // "message" or "audio"
+    private final String message; // Text message (if applicable)
+    private final byte[] audio; // Audio data (if applicable)
 
     public ReceivedData(String type, String message, byte[] audio) {
         this.type = type;

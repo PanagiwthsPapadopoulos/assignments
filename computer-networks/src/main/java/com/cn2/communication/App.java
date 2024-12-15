@@ -35,10 +35,8 @@ public class App extends Frame implements WindowListener, ActionListener {
 
 	// Declare the receiver's IP and port as class-level variables
 
-	// static String receiverAddressString = "192.168.2.9";
 
-	static String receiverAddressString = "192.168.124.227";
-	static String ownAddressString = "192.168.2.9";
+	static String receiverAddressString = "192.168.2.6";
 
 	static int receiverPort = 12345;
 	static int ownPort = 12345;
@@ -120,9 +118,7 @@ public class App extends Frame implements WindowListener, ActionListener {
 		app.setSize(500, 250);
 		app.setVisible(true);
 
-		// String serverAddress = "127.0.0.1"; // Replace with the server's IP address
-		// int port = 5000;
-		// receiverAddressString = "192.168.2.9";
+		
 		/*
 		 * 2.
 		 */
@@ -139,15 +135,15 @@ public class App extends Frame implements WindowListener, ActionListener {
 
 			// Audio format configuration
 			AudioFormat audioFormat = new AudioFormat(
-    AudioFormat.Encoding.PCM_SIGNED, // Signed PCM encoding
-    8000,                         // Sample rate: 8000 Hz
-    8,                               // Sample size in bits: 8 bits
-    1,                               // Channels: Mono
-    1,                               // Frame size (1 byte per frame)
-	8000,                         // Frame rate matches sample rate
-    false                            // Little-endian byte order
-);
-			// AudioFormat format = new AudioFormat(8000.0f, 8, 1, true, false);
+    			AudioFormat.Encoding.PCM_SIGNED, 								// Signed PCM encoding
+    			8000,                         									// Sample rate: 8000 Hz
+    			8,                               								// Sample size in bits: 8 bits
+    			1,                               								// Channels: Mono
+    			1,                               								// Frame size (1 byte per frame)
+				8000,                         									// Frame rate matches sample rate
+    			false                            								// Little-endian byte order
+			);
+			
 
 			// Create and start audio sender and receiver
 			AudioRecorder audioRecorderCall = new AudioRecorder(sender, audioFormat, activeCall, false);
@@ -164,15 +160,12 @@ public class App extends Frame implements WindowListener, ActionListener {
 		    audioPlayerLocal = new AudioPlayer(audioFormat, activeTest, true);
 		    new Thread(audioPlayerLocal).start();
 	        
-	        
-	        
+	                
 
 			// Continuously listen for incoming packets
 			while (true) {
 
-				// Receive the packet
-				// socket.receive(packet);
-
+				// Receiver Initialization
 				ReceivedData data = receiver.receiveData();
 
 				// Continuously receive and process data
@@ -310,7 +303,6 @@ public class App extends Frame implements WindowListener, ActionListener {
 			activeTest = !activeTest;
 			System.out.println("Mic status: " + activeTest);
 			
-			// sinePlayerThread.setActive(activeTest);
 			audioRecorderLocal.setActive(activeTest);
 			audioPlayerLocal.setActive(activeTest);
 			

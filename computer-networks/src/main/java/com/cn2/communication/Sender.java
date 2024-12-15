@@ -15,10 +15,9 @@ public class Sender {
         this.receiverPort = receiverPort;
     }
 
-    /**
-     * Sends a message with a header
-     * @param message The message to be sent
-     */
+
+    // Sends a text message with a header
+   
     public void sendMessage(String message) {
         try {
             // Convert the message to a byte array
@@ -41,10 +40,9 @@ public class Sender {
         }
     }
 
-    /**
-     * Sends a connection message with a header
-     * @param message The message to be sent
-     */
+    
+    // Sends a connection message with a header
+
     public void sendConnectionMessage(String message) {
         try {
             // Convert the message to a byte array
@@ -67,10 +65,8 @@ public class Sender {
         }
     }
 
-    /**
-     * Sends audio data with a header
-     * @param audioData The audio data to be sent
-     */
+    // Sends an audio message with a header 
+   
     public void sendAudio(byte[] audioData) {
         try {
             // Create the header: "CALL" + 4-digit length

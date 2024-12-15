@@ -1,5 +1,7 @@
 package com.cn2.communication;
 
+// Audio buffer for local voice storage
+
 class AudioBuffer {
     private static final AudioBuffer instance = new AudioBuffer();
     private byte[] data;
@@ -14,11 +16,13 @@ class AudioBuffer {
     	this.data = null;
     }
     
+    // Update Data
     public synchronized void addData(byte[] newData) {
-        this.data = newData; // Αποθήκευση νέων δεδομένων
+        this.data = newData; 
     }
 
+    // Return Data
     public synchronized byte[] getData() {
-        return data; // Επιστροφή δεδομένων για αναπαραγωγή
+        return data; 
     }
 }
